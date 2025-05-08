@@ -1,0 +1,48 @@
+services:
+  backend:
+    build: ./finalBackend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./finalBackend:/app
+      - /app/node_modules
+    env_file:
+      - ./finalBackend/.env
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    command: ["npm", "run", "dev"]
+
+  frontend:
+    build: ./finalFrontend
+    ports:
+      - "3000"
+    volumes:
+      - ./finalFrontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    command: ["npm", "run", "dev"]
+
+  mongodb:
+    image: mongo:6
+    container_name: mongo-container
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: mydb
+    volumes:
+      - mongodb-data:/data/db
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf   
+    ports:
+      - "3000:3000"  
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  mongodb-data:
